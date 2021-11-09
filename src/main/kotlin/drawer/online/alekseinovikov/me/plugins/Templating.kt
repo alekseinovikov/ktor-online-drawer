@@ -19,31 +19,10 @@ fun Application.configureTemplating() {
                     }
                 }
                 body {
-                    h1 { +"Online chat!" }
-                    div {
-                        id = "messages_div"
-
-                        ul {
-                        }
-                    }
-
-                    div {
-                        id = "send_div"
-
-                        form {
-                            id = "form"
-
-                            input {
-                                id = "message_input"
-                                type = InputType.text
-                                placeholder = "Enter your message"
-                            }
-                            button {
-                                id = "send_button"
-                                type = ButtonType.button
-                                +"Send"
-                            }
-                        }
+                    canvas {
+                        id = "canvas"
+                        style = "width: 100vw;" +
+                                "height: 100vh;"
                     }
                 }
             }

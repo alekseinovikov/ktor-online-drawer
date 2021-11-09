@@ -1,13 +1,14 @@
 package drawer.online.alekseinovikov.me.plugins
 
-import io.ktor.http.cio.websocket.*
-import io.ktor.websocket.*
-import java.time.*
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.application.*
-import io.ktor.response.*
-import io.ktor.request.*
+import io.ktor.client.features.json.*
+import io.ktor.http.cio.websocket.*
 import io.ktor.routing.*
+import io.ktor.websocket.*
 import kotlinx.coroutines.channels.SendChannel
+import java.time.Duration
+import java.util.*
 
 fun Application.configureSockets() {
     install(WebSockets) {
@@ -18,21 +19,27 @@ fun Application.configureSockets() {
     }
 
     val connections: MutableSet<SendChannel<Frame>> = mutableSetOf()
+    val history = LinkedList<Coords>()
+    val serializer = jacksonObjectMapper()
 
     routing {
-        webSocket("/chat") { // websocketSession
-            send("Welcome to the chat!")
+        webSocket("/draw") { // websocketSession
+            history.forEach { outgoing.send(Frame.Text(serializer.writeValueAsString(it))) }
             connections.add(outgoing)
 
             try {
                 for (frame in incoming) {
                     frame as? Frame.Text ?: continue
                     val receivedText = frame.readText()
+                    val coords = serializer.readValue(receivedText, Coords::class.java)
+                    history.add(coords)
                     connections.forEach { it.send(Frame.Text(receivedText)) }
                 }
-            }finally {
+            } finally {
                 connections.remove(outgoing)
             }
         }
     }
 }
+
+data class Coords(val x1: Int?, val x2: Int, val y1: Int?, val y2: Int)
